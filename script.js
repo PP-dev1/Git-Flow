@@ -1,29 +1,7 @@
-
 const CHAVE_ARMAZENAMENTO = "taskflow.tarefas";
+const TEMPO_CARREGAMENTO = 600;
 
 const ROTULOS_PRIORIDADE = { alta: "Alta", media: "Média", baixa: "Baixa" };
-
-
-const TAREFAS_INICIAIS = [
-  {
-    id: 1,
-    nome: "Revisar HTML semântico",
-    descricao: "Conferir a organização de header, main, footer e títulos.",
-    categoria: "Estudos",
-    prioridade: "media",
-    prazo: "2026-11-20",
-    concluida: true,
-  },
-  {
-    id: 2,
-    nome: "Organizar arquivos do projeto",
-    descricao: "Separar o HTML e a folha de estilos em pastas claras.",
-    categoria: "Projetos",
-    prioridade: "baixa",
-    prazo: "2026-11-20",
-    concluida: true,
-  },
-];
 
 const formulario = document.getElementById("formulario-tarefa");
 const cartaoFormulario = document.getElementById("cartao-formulario");
@@ -38,7 +16,6 @@ const campoDescricao = document.getElementById("campo-descricao");
 const campoCategoria = document.getElementById("campo-categoria");
 const campoPrioridade = document.getElementById("campo-prioridade");
 const campoPrazo = document.getElementById("campo-prazo");
-
 
 const camposValidados = {
   nome: campoNome,
@@ -67,10 +44,10 @@ const barraProgresso = document.getElementById("barra-progresso");
 
 const mensagem = document.getElementById("mensagem");
 
-
 let tarefas = carregarTarefas();
 let idEmEdicao = null;
-let idNovaTarefa = null; 
+let idNovaTarefa = null;
+let cadastrando = false;
 let temporizadorMensagem;
 
 function carregarTarefas() {
@@ -81,9 +58,8 @@ function carregarTarefas() {
       if (Array.isArray(lista)) return lista;
     }
   } catch (erro) {
-    
   }
-  return TAREFAS_INICIAIS.map((tarefa) => ({ ...tarefa }));
+  return [];
 }
 
 function salvarTarefas() {
@@ -94,7 +70,6 @@ function salvarTarefas() {
   }
 }
 
-
 function hojeISO() {
   const hoje = new Date();
   const mes = String(hoje.getMonth() + 1).padStart(2, "0");
@@ -102,15 +77,13 @@ function hojeISO() {
   return `${hoje.getFullYear()}-${mes}-${dia}`;
 }
 
-
 function formatarData(dataISO) {
   const [ano, mes, dia] = dataISO.split("-");
   return `${dia}/${mes}/${ano}`;
 }
 
-
 function normalizarTexto(texto) {
-  return texto.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function textoTarefas(quantidade) {
@@ -126,7 +99,6 @@ function mostrarMensagem(texto, tipo = "sucesso") {
   }, 3500);
 }
 
-
 function lerFormulario() {
   return {
     nome: campoNome.value.trim(),
@@ -137,12 +109,11 @@ function lerFormulario() {
   };
 }
 
-
 function validarDados(dados) {
   const erros = {};
 
   if (dados.nome === "") {
-    erros.nome = "Informe o nome da tarefa.";
+    erros.nome = "Digite uma tarefa antes de adicionar.";
   } else if (dados.nome.length < 3) {
     erros.nome = "O nome deve ter pelo menos 3 caracteres.";
   }
@@ -177,9 +148,29 @@ function limparErros() {
   Object.keys(camposValidados).forEach(limparErro);
 }
 
+function iniciarCarregamento() {
+  cadastrando = true;
+  botaoSalvar.disabled = true;
+  botaoSalvar.classList.add("btn--loading");
+  botaoSalvar.textContent = "Adicionando...";
+}
+
+function finalizarCarregamento() {
+  cadastrando = false;
+  botaoSalvar.disabled = false;
+  botaoSalvar.classList.remove("btn--loading");
+  atualizarModoFormulario();
+}
+
+function concluirEnvio() {
+  salvarTarefas();
+  sairDoModoEdicao();
+  renderizar();
+}
 
 function aoEnviarFormulario(evento) {
   evento.preventDefault();
+  if (cadastrando) return;
 
   const dados = lerFormulario();
   const erros = validarDados(dados);
@@ -193,15 +184,18 @@ function aoEnviarFormulario(evento) {
     return;
   }
 
-  if (idEmEdicao === null) {
-    cadastrarTarefa(dados);
-  } else {
+  if (idEmEdicao !== null) {
     atualizarTarefa(idEmEdicao, dados);
+    concluirEnvio();
+    return;
   }
 
-  salvarTarefas();
-  sairDoModoEdicao();
-  renderizar();
+  iniciarCarregamento();
+  setTimeout(() => {
+    cadastrarTarefa(dados);
+    concluirEnvio();
+    finalizarCarregamento();
+  }, TEMPO_CARREGAMENTO);
 }
 
 function cadastrarTarefa(dados) {
@@ -242,7 +236,6 @@ function sairDoModoEdicao() {
   atualizarModoFormulario();
 }
 
-
 function atualizarModoFormulario() {
   const editando = idEmEdicao !== null;
   rotuloFormulario.textContent = editando ? "EDIÇÃO" : "CADASTRO";
@@ -251,7 +244,6 @@ function atualizarModoFormulario() {
   botaoCancelar.hidden = !editando;
   cartaoFormulario.classList.toggle("form-card--editando", editando);
 }
-
 
 function alternarStatus(id) {
   const tarefa = tarefas.find((item) => item.id === id);
@@ -271,7 +263,6 @@ function excluirTarefa(id) {
   renderizar();
   mostrarMensagem("Tarefa excluída.");
 }
-
 
 function existeFiltroAtivo() {
   return (
@@ -304,7 +295,6 @@ function limparFiltros() {
   filtroStatus.value = "";
   renderizar();
 }
-
 
 function atualizarResumo() {
   const total = tarefas.length;
@@ -387,7 +377,6 @@ function atualizarContagem(quantidadeVisivel) {
   botaoLimpar.hidden = !filtrando;
 }
 
-
 function renderizar() {
   const tarefasVisiveis = filtrarTarefas();
   atualizarResumo();
@@ -395,22 +384,19 @@ function renderizar() {
   atualizarContagem(tarefasVisiveis.length);
 }
 
-
 formulario.addEventListener("submit", aoEnviarFormulario);
 botaoCancelar.addEventListener("click", () => {
   sairDoModoEdicao();
   renderizar();
 });
 
-
 formulario.addEventListener("input", (evento) => {
   if (camposValidados[evento.target.name]) limparErro(evento.target.name);
 });
 
-
 listaTarefas.addEventListener("click", (evento) => {
   const botao = evento.target.closest("[data-acao]");
-  if (!botao) return;
+  if (!botao || cadastrando) return;
 
   const id = Number(botao.closest(".task-card").dataset.id);
   const acao = botao.dataset.acao;
@@ -425,6 +411,4 @@ listaTarefas.addEventListener("click", (evento) => {
 });
 botaoLimpar.addEventListener("click", limparFiltros);
 
-
-salvarTarefas();
 renderizar();
