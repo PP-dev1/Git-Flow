@@ -16,7 +16,18 @@
             <span class="brand-symbol" aria-hidden="true">✓</span>
             <span class="brand-name">taskflow<span class="brand-dot">.</span></span>
           </div>
-          <p class="header-tagline">Seu espaço para organizar o dia</p>
+          <div class="header-actions">
+            <p class="header-tagline">Seu espaço para organizar o dia</p>
+            <button type="button" class="theme-toggle" id="botao-tema" aria-label="Ativar modo escuro" title="Ativar modo escuro">
+              <svg class="icon-lua" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+              </svg>
+              <svg class="icon-sol" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -162,10 +173,8 @@
       </footer>
     </div>
 
-    <!-- Mensagens de sucesso e erro -->
     <div class="toast" id="mensagem" role="status" aria-live="polite"></div>
 
-    <!-- Modelo de um cartão de tarefa (copiado pelo JavaScript) -->
     <template id="modelo-tarefa">
       <li class="task-card">
         <button type="button" class="task-marker" data-acao="alternar"></button>
