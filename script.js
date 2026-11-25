@@ -1,7 +1,12 @@
 const CHAVE_ARMAZENAMENTO = "taskflow.tarefas";
+const CHAVE_TEMA = "taskflow.tema";
 const TEMPO_CARREGAMENTO = 600;
 
 const ROTULOS_PRIORIDADE = { alta: "Alta", media: "Média", baixa: "Baixa" };
+
+const botaoTema = document.getElementById("botao-tema");
+
+aplicarTema(carregarTema());
 
 const formulario = document.getElementById("formulario-tarefa");
 const cartaoFormulario = document.getElementById("cartao-formulario");
@@ -68,6 +73,36 @@ function salvarTarefas() {
   } catch (erro) {
     mostrarMensagem("Não foi possível salvar as tarefas neste navegador.", "erro");
   }
+}
+
+function carregarTema() {
+  try {
+    return localStorage.getItem(CHAVE_TEMA) === "dark" ? "dark" : "light";
+  } catch (erro) {
+    return "light";
+  }
+}
+
+function salvarTema(tema) {
+  try {
+    localStorage.setItem(CHAVE_TEMA, tema);
+  } catch (erro) {
+  }
+}
+
+function aplicarTema(tema) {
+  const texto = tema === "dark" ? "Ativar modo claro" : "Ativar modo escuro";
+  document.documentElement.dataset.tema = tema;
+  botaoTema.setAttribute("aria-label", texto);
+  botaoTema.setAttribute("title", texto);
+}
+
+function alternarTema() {
+  const novoTema = document.documentElement.dataset.tema === "dark" ? "light" : "dark";
+  document.documentElement.classList.add("tema-transicao");
+  aplicarTema(novoTema);
+  salvarTema(novoTema);
+  setTimeout(() => document.documentElement.classList.remove("tema-transicao"), 350);
 }
 
 function hojeISO() {
@@ -410,5 +445,6 @@ listaTarefas.addEventListener("click", (evento) => {
   filtro.addEventListener("input", renderizar);
 });
 botaoLimpar.addEventListener("click", limparFiltros);
+botaoTema.addEventListener("click", alternarTema);
 
 renderizar();
