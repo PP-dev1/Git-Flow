@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="TaskFlow: versão inicial estática de uma lista de tarefas feita com HTML semântico e CSS responsivo." />
+    <meta name="description" content="TaskFlow: gerenciador de tarefas com cadastro, filtros e armazenamento local." />
     <meta name="theme-color" content="#14243d" />
     <title>TaskFlow | Minhas tarefas</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="page-shell">
@@ -22,22 +22,80 @@
 
       <main id="conteudo-principal" class="container main-content">
         <section class="intro" aria-labelledby="titulo-pagina">
-          <p class="eyebrow">PAINEL DE TAREFAS · RODADA 01</p>
+          <p class="eyebrow">PAINEL DE TAREFAS</p>
           <h1 id="titulo-pagina">Uma tarefa de cada vez.</h1>
           <p class="intro-description">
             Visualize o que precisa ser feito e acompanhe suas conquistas.
-            Esta é a primeira versão, feita apenas com HTML e CSS.
           </p>
         </section>
 
         <section class="overview" aria-labelledby="titulo-resumo">
           <div class="overview-copy">
             <h2 id="titulo-resumo">Seu progresso</h2>
-            <p><strong>2 de 2</strong> tarefas concluídas</p>
+            <p><strong id="resumo-contagem">0 de 0</strong> <span id="resumo-rotulo">tarefas concluídas</span></p>
           </div>
           <div class="overview-progress">
-            <span aria-hidden="true">100%</span>
-            <progress value="2" max="2" aria-label="Progresso das tarefas: duas de duas concluídas">100%</progress>
+            <span id="resumo-porcentagem" aria-hidden="true">0%</span>
+            <progress id="barra-progresso" value="0" max="100" aria-label="Progresso das tarefas">0%</progress>
+          </div>
+        </section>
+
+        <section class="form-section" id="secao-formulario" aria-labelledby="titulo-formulario">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker" id="formulario-rotulo">CADASTRO</p>
+              <h2 id="titulo-formulario">Nova tarefa</h2>
+            </div>
+            <p class="form-note"><span class="required" aria-hidden="true">*</span> Campo obrigatório</p>
+          </div>
+
+          <div class="form-card" id="cartao-formulario">
+            <form id="formulario-tarefa" class="task-form" novalidate>
+              <div class="field field--full">
+                <label for="campo-nome">Nome da tarefa <span class="required" aria-hidden="true">*</span></label>
+                <input type="text" id="campo-nome" name="nome" maxlength="60" placeholder="Ex.: Estudar para a prova de sexta" required aria-describedby="erro-nome" />
+                <p class="field-error" id="erro-nome" hidden></p>
+              </div>
+
+              <div class="field field--full">
+                <label for="campo-descricao">Descrição</label>
+                <textarea id="campo-descricao" name="descricao" maxlength="140" rows="3" placeholder="Detalhes opcionais sobre a tarefa"></textarea>
+              </div>
+
+              <div class="field">
+                <label for="campo-categoria">Categoria <span class="required" aria-hidden="true">*</span></label>
+                <select id="campo-categoria" name="categoria" required aria-describedby="erro-categoria">
+                  <option value="">Selecione</option>
+                  <option value="Estudos">Estudos</option>
+                  <option value="Trabalho">Trabalho</option>
+                  <option value="Projetos">Projetos</option>
+                  <option value="Pessoal">Pessoal</option>
+                </select>
+                <p class="field-error" id="erro-categoria" hidden></p>
+              </div>
+
+              <div class="field">
+                <label for="campo-prioridade">Prioridade <span class="required" aria-hidden="true">*</span></label>
+                <select id="campo-prioridade" name="prioridade" required aria-describedby="erro-prioridade">
+                  <option value="">Selecione</option>
+                  <option value="alta">Alta</option>
+                  <option value="media">Média</option>
+                  <option value="baixa">Baixa</option>
+                </select>
+                <p class="field-error" id="erro-prioridade" hidden></p>
+              </div>
+
+              <div class="field">
+                <label for="campo-prazo">Prazo de entrega <span class="required" aria-hidden="true">*</span></label>
+                <input type="date" id="campo-prazo" name="prazo" required aria-describedby="erro-prazo" />
+                <p class="field-error" id="erro-prazo" hidden></p>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn--primary" id="botao-salvar">Cadastrar tarefa</button>
+                <button type="button" class="btn btn--ghost" id="botao-cancelar" hidden>Cancelar edição</button>
+              </div>
+            </form>
           </div>
         </section>
 
@@ -45,40 +103,91 @@
           <div class="section-heading">
             <div>
               <p class="section-kicker">SUA LISTA</p>
-              <h2 id="titulo-tarefas">Tarefas de hoje</h2>
+              <h2 id="titulo-tarefas">Minhas tarefas</h2>
             </div>
-            <p class="task-count">2 tarefas</p>
+            <div class="heading-side">
+              <button type="button" class="btn btn--ghost btn--small" id="botao-limpar" hidden>Limpar filtros</button>
+              <p class="task-count" id="contagem-tarefas" aria-live="polite">0 tarefas</p>
+            </div>
           </div>
 
-          <ul class="task-list">
-            <li class="task-card task-card--done">
-              <span class="task-marker" aria-hidden="true">✓</span>
-              <div class="task-content">
-                <h3>Revisar HTML semântico</h3>
-                <p>Conferir a organização de header, main, footer e títulos.</p>
-              </div>
-              <span class="status status--done">Concluída</span>
-            </li>
-            <li class="task-card task-card--done">
-              <span class="task-marker" aria-hidden="true">✓</span>
-              <div class="task-content">
-                <h3>Organizar arquivos do projeto</h3>
-                <p>Separar o HTML e a folha de estilos em pastas claras.</p>
-              </div>
-              <span class="status status--done">Concluída</span>
-            </li>
-          </ul>
+          <div class="filters" role="search" aria-label="Pesquisar e filtrar tarefas">
+            <div class="filter filter--busca">
+              <label for="filtro-busca">Pesquisar pelo nome</label>
+              <input type="search" id="filtro-busca" placeholder="Digite o nome da tarefa" autocomplete="off" />
+            </div>
+            <div class="filter">
+              <label for="filtro-prioridade">Prioridade</label>
+              <select id="filtro-prioridade">
+                <option value="">Todas</option>
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="filtro-categoria">Categoria</label>
+              <select id="filtro-categoria">
+                <option value="">Todas</option>
+                <option value="Estudos">Estudos</option>
+                <option value="Trabalho">Trabalho</option>
+                <option value="Projetos">Projetos</option>
+                <option value="Pessoal">Pessoal</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="filtro-status">Status</label>
+              <select id="filtro-status">
+                <option value="">Todos</option>
+                <option value="pendente">Pendentes</option>
+                <option value="concluida">Concluídas</option>
+              </select>
+            </div>
+          </div>
 
-          <p class="static-note">Esta é uma prévia estática: cadastro, filtros, armazenamento local e tema claro/escuro serão adicionados nas próximas rodadas.</p>
+          <ul class="task-list" id="lista-tarefas"></ul>
+
+          <div class="empty-state" id="estado-vazio" hidden>
+            <h3 id="estado-vazio-titulo">Nenhuma tarefa encontrada</h3>
+            <p id="estado-vazio-texto">Ajuste a pesquisa ou os filtros para ver outras tarefas.</p>
+          </div>
         </section>
       </main>
 
       <footer class="site-footer">
         <div class="container footer-content">
           <p>© 2026 TaskFlow · Projeto de GitFlow</p>
-          <p>Rodada 1 — HTML + CSS, sem JavaScript</p>
+          <p>HTML, CSS e JavaScript · Dados salvos neste navegador</p>
         </div>
       </footer>
     </div>
+
+    <!-- Mensagens de sucesso e erro -->
+    <div class="toast" id="mensagem" role="status" aria-live="polite"></div>
+
+    <!-- Modelo de um cartão de tarefa (copiado pelo JavaScript) -->
+    <template id="modelo-tarefa">
+      <li class="task-card">
+        <button type="button" class="task-marker" data-acao="alternar"></button>
+        <div class="task-content">
+          <h3 class="task-name"></h3>
+          <p class="task-description"></p>
+          <div class="task-meta">
+            <span class="badge"></span>
+            <span class="meta-item meta-category"></span>
+            <span class="meta-item meta-deadline"></span>
+          </div>
+        </div>
+        <div class="task-aside">
+          <span class="status"></span>
+          <div class="task-actions">
+            <button type="button" class="link-action" data-acao="editar">Editar</button>
+            <button type="button" class="link-action link-action--danger" data-acao="excluir">Excluir</button>
+          </div>
+        </div>
+      </li>
+    </template>
+
+    <script src="script.js"></script>
   </body>
 </html>
